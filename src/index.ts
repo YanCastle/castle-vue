@@ -67,7 +67,7 @@ export class OperateConfig {
     Add: boolean = false
     Edit: boolean = false
 }
-declare let require: any
+
 export default class VueList extends Vue {
     // 条件
     Where: SearchWhere = new SearchWhere
