@@ -7,11 +7,19 @@ import {
     Provide,
     Vue
 } from "vue-property-decorator";
-import { SearchWhere } from "castle-vuex"
+import {
+    SearchWhere
+} from "castle-vuex"
 
-import { readAsJSON, writeFileFromJSON, writeFileFromTable } from 'castle-xlsx'
+import {
+    readAsJSON,
+    writeFileFromJSON,
+    writeFileFromTable
+} from 'castle-xlsx'
 
-import { cloneDeep as clone } from 'lodash'
+import {
+    cloneDeep as clone
+} from 'lodash'
 
 export class ModalConfig {
     Show: boolean = false;
@@ -59,6 +67,7 @@ export class OperateConfig {
     Add: boolean = false
     Edit: boolean = false
 }
+declare let require:any
 export default class VueList extends Vue {
     // 条件
     Where: SearchWhere = new SearchWhere
@@ -91,8 +100,24 @@ export default class VueList extends Vue {
                 this.Select.SelectedIDs.push(e[this.Vuex.PK])
             });
         } else {
-            this.Select.SelectedIDs = []
+            if (this.Select.SelectedIDs.length == this.Where.N) this.Select.SelectedIDs = [];
         }
+    }
+    /**
+     * 翻页
+     */
+    @Watch("Where.P")
+    page() {
+        this.Select.SelectedIDs = [];
+        this.Select.All = false;
+        this.search();
+    }
+    /**
+     * 更具关键词模糊查询
+     */
+    @Watch("Where.Keyword")
+    watchKeyword(n: string) {
+        //TODO 更具关键词模糊查询
     }
     /**
      * 选中某个或取消选中
@@ -100,11 +125,13 @@ export default class VueList extends Vue {
      */
     selectOne(v: any) {
         if (v[this.Vuex.PK]) {
-            let i = this.Select.SelectedIDs.indexOf(v[this.Vuex.PK]);
+            let i = this.Select.SelectedIDs.indexOf(v[this.Vuex.PK])
             if (i > -1) {
                 this.Select.SelectedIDs.splice(i, 1)
+                if (this.Select.All) this.Select.All = false
             } else {
                 this.Select.SelectedIDs.push(v[this.Vuex.PK])
+                if (this.Select.SelectedIDs.length == this.Where.N) this.Select.All = true
             }
         }
     }
@@ -147,20 +174,40 @@ export default class VueList extends Vue {
             }
         }
     }
+    /**
+     * 导出
+     */
     exportXLSX() {
         //TODO 可能需要导出的范围选择
-
     }
+    /**
+     * 下载模板
+     */
+    downloadTemplate() {
+        //TODO 下载模板
+    }
+    /**
+     * 添加
+     * @param v 
+     */
     add(v: any) {
         this.Modal.Type = 'add';
         this.Modal.Data = clone(v)
         this.Modal.Show = true;
     }
+    /**
+     * 编辑
+     * @param v 
+     */
     edit(v: any) {
         this.Modal.Type = 'edit';
         this.Modal.Data = clone(v)
         this.Modal.Show = true;
     }
+    /**
+     * 删除
+     * @param v 
+     */
     del(v: any) {
         this.$confirm(
             //内容
@@ -178,7 +225,7 @@ export default class VueList extends Vue {
                 });
             },
             //取消按钮
-            () => { },
+            () => {},
             //标题
             {
                 icon: 3,
@@ -186,8 +233,19 @@ export default class VueList extends Vue {
             }
         );
     }
-    mounted() {
-
+    async delW() {
+        if (this.Select.SelectedIDs.length == 0) return;
+        try {
+            //TODO 批量删除逻辑
+        } catch (error) {
+          this.$msg("删除失败");
+        }
+      }
+    /**
+     * 查询
+     */
+    search() {
+        this.$store.commit(`M_${this.Vuex.Code.toUpperCase()}_WHERE`, this.Where);
+        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`);
     }
-    created() { }
 }
