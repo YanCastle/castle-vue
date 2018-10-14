@@ -234,6 +234,7 @@ export default class VueList extends Vue {
         );
     }
     async delW() {
+        //TODD 并且删除提示框显示
         if (this.Select.SelectedIDs.length == 0) return
         try {
             //TODO 批量删除逻辑
