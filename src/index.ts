@@ -67,7 +67,7 @@ export class OperateConfig {
     Add: boolean = false
     Edit: boolean = false
 }
-declare let require:any
+declare let require: any
 export default class VueList extends Vue {
     // 条件
     Where: SearchWhere = new SearchWhere
@@ -90,20 +90,6 @@ export default class VueList extends Vue {
         return this.$store.getters[`G_${this.Vuex.Code.toUpperCase()}_RESULT`]
     }
     /**
-     * 全选与反选
-     */
-    @Watch('Select.All')
-    selectAll() {
-        if (this.Select.All) {
-            this.Select.SelectedIDs = []
-            this.Result.L.forEach((e: any) => {
-                this.Select.SelectedIDs.push(e[this.Vuex.PK])
-            });
-        } else {
-            if (this.Select.SelectedIDs.length == this.Where.N) this.Select.SelectedIDs = [];
-        }
-    }
-    /**
      * 翻页
      */
     @Watch("Where.P")
@@ -118,6 +104,20 @@ export default class VueList extends Vue {
     @Watch("Where.Keyword")
     watchKeyword(n: string) {
         //TODO 更具关键词模糊查询
+    }
+    /**
+     * 全选与反选
+     */
+    @Watch('Select.All')
+    selectAll() {
+        if (this.Select.All) {
+            this.Select.SelectedIDs = []
+            this.Result.L.forEach((e: any) => {
+                this.Select.SelectedIDs.push(e[this.Vuex.PK])
+            });
+        } else {
+            if (this.Select.SelectedIDs.length == this.Where.N) this.Select.SelectedIDs = [];
+        }
     }
     /**
      * 选中某个或取消选中
@@ -217,10 +217,10 @@ export default class VueList extends Vue {
                 this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL`, {
                     Data: v,
                     Success: () => {
-                        this.$msg("删除成功");
+                        this.$msg("删除成功")
                     },
                     Error: () => {
-                        this.$msg("删除失败");
+                        this.$msg("删除失败")
                     }
                 });
             },
@@ -234,18 +234,83 @@ export default class VueList extends Vue {
         );
     }
     async delW() {
-        if (this.Select.SelectedIDs.length == 0) return;
+        if (this.Select.SelectedIDs.length == 0) return
         try {
             //TODO 批量删除逻辑
         } catch (error) {
-          this.$msg("删除失败");
+            this.$msg("删除失败")
         }
-      }
+    }
+    /**
+     * 批量删除
+     */
+    batchDel() {
+        if (this.Select.SelectedIDs.length == 0) {
+            this.$msg("请选择需要删除的数据")
+            return;
+        }
+        this.$confirm(
+            //内容
+            "确定要删除吗?",
+            //确定按钮
+            () => {
+                this.delW();
+            },
+            //取消按钮
+            () => {},
+            //标题
+            {
+                icon: 3,
+                title: "信息"
+            }
+        );
+    }
     /**
      * 查询
      */
     search() {
         this.$store.commit(`M_${this.Vuex.Code.toUpperCase()}_WHERE`, this.Where);
         this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`);
+    }
+
+    //
+    //键盘事件
+    //
+
+    /**
+     * ctrl+a
+     * 是否全选
+     */
+    isSelectAll() {
+        this.Select.All == true ? this.Select.All = false : this.Select.All = true
+    }
+
+    /**
+     * del
+     * 弹出确认删除框
+     * this.batchDel()
+     */
+
+    /**
+     * enter
+     * 确定删除
+     * this.delW()
+     */
+
+    /**
+     * left
+     * 上一页
+     */
+    previous() {
+        if (this.Where.P > 1) this.Where.P--
+        else this.Where.P = Math.ceil(this.Result.T / this.Where.N);
+    }
+    /**
+     * right
+     * 下一页
+     */
+    next() {
+        if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
+        else this.Where.P = 1
     }
 }
