@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/YanCastle/castle-vue#readme",
   "dependencies": {
+    "castle-hotkey": "^1.0.1",
     "castle-vuex": "^1.0.5",
     "castle-xlsx": "^1.0.1",
     "lodash": "^4.17.11",
