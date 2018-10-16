@@ -68,6 +68,13 @@ export class OperateConfig {
     Edit: boolean = false
 }
 
+/**
+ * Table配置信息
+ */
+export class TableConfig {
+    Index: number = -1
+}
+
 export default class VueList extends Vue {
     // 条件
     Where: SearchWhere = new SearchWhere
@@ -83,6 +90,7 @@ export default class VueList extends Vue {
     Vuex: VuexConfig = new VuexConfig
     //操作权限
     Operate: OperateConfig = new OperateConfig
+    Table: TableConfig = new TableConfig
     /**
      * 查询结果
      */
@@ -304,8 +312,10 @@ export default class VueList extends Vue {
      */
     previous() {
         if (this.Where.P > 1) this.Where.P--
-        else this.Where.P = Math.ceil(this.Result.T / this.Where.N);
+        else this.Where.P = Math.ceil(this.Result.T / this.Where.N)
+        this.Table.Index = -1
     }
+
     /**
      * right
      * 下一页
@@ -313,5 +323,63 @@ export default class VueList extends Vue {
     next() {
         if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
         else this.Where.P = 1
+        this.Table.Index = -1
+    }
+
+    /**
+     * up
+     * tr Index--
+     */
+    up() {
+        if (this.Table.Index > -1) this.Table.Index--
+    }
+
+    /**
+     * down
+     * tr Index++
+     */
+    down() {
+        if (this.Table.Index < this.Where.N - 1) this.Table.Index++
+    }
+
+    /**
+     * space
+     * 单选
+     */
+    space() {
+        if (this.Table.Index < 0) return
+        this.selectOne(this.Result.L[this.Table.Index])
+    }
+
+    /**
+     * f1
+     * 显示添加模态框
+     * this.add()
+     */
+
+    /**
+     * f2
+     * 显示编辑模态框
+     */
+    showEditModal() {
+        this.Modal.Show = true
+        this.Modal.Type = "edit"
+        this.Modal.Data = clone(this.Result.L[this.Table.Index])
+    }
+
+    /**
+     * 组件被加载的时候触发
+     */
+    _mounted() {
+        if (this.Result.T == 0) {
+            this.search()
+        }
+    }
+
+    /**
+     * 组件被创建的时候触发
+     */
+    _created() {
+
     }
 }
