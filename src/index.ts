@@ -102,9 +102,10 @@ export default class VueList extends Vue {
      */
     @Watch("Where.P")
     page() {
-        this.Select.SelectedIDs = [];
-        this.Select.All = false;
-        this.search();
+        this.Table.Index = -1
+        this.Select.SelectedIDs = []
+        this.Select.All = false
+        this.search()
     }
     /**
      * 更具关键词模糊查询
@@ -144,7 +145,7 @@ export default class VueList extends Vue {
         }
     }
     selectFile() {
-        let input: any = this.$refs.import;
+        let input: any = this.$refs.import
         if (input) {
             input.value = ""
             input.click()
@@ -156,7 +157,7 @@ export default class VueList extends Vue {
      * 导入
      */
     importXLSX() {
-        let input: any = this.$refs.import;
+        let input: any = this.$refs.import
         if (!input) {
             return;
         }
@@ -331,7 +332,8 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if (this.Table.Index > -1) this.Table.Index--
+        if (this.Table.Index == -1) this.Table.Index = this.Where.N-1
+        else  this.Table.Index--
     }
 
     /**
@@ -340,6 +342,7 @@ export default class VueList extends Vue {
      */
     down() {
         if (this.Table.Index < this.Where.N - 1) this.Table.Index++
+        else this.Table.Index=-1
     }
 
     /**
@@ -362,6 +365,7 @@ export default class VueList extends Vue {
      * 显示编辑模态框
      */
     showEditModal() {
+        if (this.Table.Index < 0) return
         this.Modal.Show = true
         this.Modal.Type = "edit"
         this.Modal.Data = clone(this.Result.L[this.Table.Index])
