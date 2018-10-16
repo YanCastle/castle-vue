@@ -264,11 +264,17 @@ export default class VueList extends Vue {
     async delW() {
         //TODD 并且删除提示框显示
         if (this.Select.SelectedIDs.length == 0) return
-        try {
-            //TODO 批量删除逻辑
-        } catch (error) {
-            this.$msg("删除失败")
-        }
+        this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs }
+        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
+            Data: this.Where.W,
+            Success: () => {
+                this.Select.All = false
+                this.$msg('删除成功')
+            },
+            Error: () => {
+                this.$msg('删除失败')
+            }
+        })
     }
     /**
      * 批量删除
