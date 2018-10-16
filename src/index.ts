@@ -60,7 +60,7 @@ export class SearchConfig {
  */
 export class VuexConfig {
     Code: string = ""
-    PK: string = "";
+    PK: string = ""
 }
 export class OperateConfig {
     Del: boolean = false
@@ -90,12 +90,31 @@ export default class VueList extends Vue {
     Vuex: VuexConfig = new VuexConfig
     //操作权限
     Operate: OperateConfig = new OperateConfig
+    //Table配置
     Table: TableConfig = new TableConfig
     /**
      * 查询结果
      */
     get Result() {
         return this.$store.getters[`G_${this.Vuex.Code.toUpperCase()}_RESULT`]
+    }
+    /**
+     * 是否能添加
+     */
+    get canAdd() {
+        return this.Operate.Add
+    }
+    /**
+     * 是否能删除
+     */
+    get canDel() {
+        return this.Operate.Del
+    }
+    /**
+     * 是否能修改
+     */
+    get canEdit() {
+        return this.Operate.Edit
     }
     /**
      * 翻页
@@ -200,18 +219,18 @@ export default class VueList extends Vue {
      * @param v 
      */
     add(v: any) {
-        this.Modal.Type = 'add';
+        this.Modal.Type = 'add'
         this.Modal.Data = clone(v)
-        this.Modal.Show = true;
+        this.Modal.Show = true
     }
     /**
      * 编辑
      * @param v 
      */
     edit(v: any) {
-        this.Modal.Type = 'edit';
+        this.Modal.Type = 'edit'
         this.Modal.Data = clone(v)
-        this.Modal.Show = true;
+        this.Modal.Show = true
     }
     /**
      * 删除
@@ -264,7 +283,7 @@ export default class VueList extends Vue {
             "确定要删除吗?",
             //确定按钮
             () => {
-                this.delW();
+                this.delW()
             },
             //取消按钮
             () => {},
@@ -279,8 +298,8 @@ export default class VueList extends Vue {
      * 查询
      */
     search() {
-        this.$store.commit(`M_${this.Vuex.Code.toUpperCase()}_WHERE`, this.Where);
-        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`);
+        this.$store.commit(`M_${this.Vuex.Code.toUpperCase()}_WHERE`, this.Where)
+        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`)
     }
 
     //
@@ -357,8 +376,10 @@ export default class VueList extends Vue {
     /**
      * f1
      * 显示添加模态框
-     * this.add()
      */
+    showAddModal() {
+        this.add({})
+    }
 
     /**
      * f2
@@ -366,9 +387,7 @@ export default class VueList extends Vue {
      */
     showEditModal() {
         if (this.Table.Index < 0) return
-        this.Modal.Show = true
-        this.Modal.Type = "edit"
-        this.Modal.Data = clone(this.Result.L[this.Table.Index])
+        this.edit(this.Result.L[this.Table.Index])
     }
 
     /**
