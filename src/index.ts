@@ -332,8 +332,8 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if (this.Table.Index == -1) this.Table.Index = this.Where.N-1
-        else  this.Table.Index--
+        if (this.Table.Index == -1) this.Table.Index = this.Where.N - 1
+        else this.Table.Index--
     }
 
     /**
@@ -342,7 +342,7 @@ export default class VueList extends Vue {
      */
     down() {
         if (this.Table.Index < this.Where.N - 1) this.Table.Index++
-        else this.Table.Index=-1
+        else this.Table.Index = -1
     }
 
     /**
@@ -374,16 +374,21 @@ export default class VueList extends Vue {
     /**
      * 组件被加载的时候触发
      */
-    _mounted() {
+    _mounted(...Methods: Function[]) {
         if (this.Result.T == 0) {
             this.search()
         }
+        Methods.forEach((methods) => {
+            methods()
+        })
     }
 
     /**
      * 组件被创建的时候触发
      */
-    _created() {
-
+    _created(...Methods: Function[]) {
+        Methods.forEach((methods) => {
+            methods()
+        })
     }
 }
