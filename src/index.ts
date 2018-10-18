@@ -417,3 +417,116 @@ export default class VueList extends Vue {
         })
     }
 }
+
+/**
+ * 模态框配置信息
+ */
+export interface OptionsConfig{
+    area?:string[]
+    maxmin?:boolean
+    btn?:string[]
+    yes?:Function
+    btn2?:Function
+}
+
+export class VueEdit extends Vue {
+    //编辑数据
+    EditData: any = {}
+    //模态框显示与否
+    @Prop({
+        type: Boolean,
+        required: true,
+        default: false
+    })
+    value: any
+    //模态框类型
+    @Prop({
+        type: String,
+        required: true,
+        default: ""
+    })
+    Type: any;
+    //传入的数据
+    @Prop({
+        type: [Object, Array],
+        required: true,
+        default: {}
+    })
+    Data: any;
+    //表名
+    @Prop({
+        type: String,
+        required: true,
+        default: ""
+    })
+    Code: any;
+
+    @Watch('value')
+    watchValue(n: boolean) {
+        if (n) this.EditData = clone(this.Data)
+    }
+    /**
+     * 模态框配置
+     */
+    Options: OptionsConfig = {
+        area: ["80%", "80%"],
+        maxmin: true,
+        btn: ["确定", "取消"],
+        yes: ()=>{
+            this.submit()
+        },
+        btn2: ()=>{
+            this.cancel()
+        }
+    }
+    /**
+     * 点击确定按钮
+     */
+    submit() {
+        this.Type == "add" ? this.add() : this.edit()
+    }
+    /**
+     * 添加
+     */
+    add() {
+        this.$store.dispatch(`A_${this.Code.toUpperCase()}_ADD`, {
+            Data: this.EditData,
+            Success: () => {
+                this.$msg("添加成功")
+                this.value = false
+            },
+            Error: () => {
+                this.$msg("添加失败")
+            }
+        });
+    }
+    /**
+     * 编辑
+     */
+    edit() {
+        this.$store.dispatch(`A_${this.Code.toUpperCase()}_SAVE`, {
+            Data: this.EditData,
+            Success: () => {
+                this.$msg("修改成功")
+                this.value = false;
+            },
+            Error: () => {
+                this.$msg("修改失败")
+            }
+        });
+    }
+
+    get ShowModal() {
+        return this.value
+    }
+
+    set ShowModal(v: boolean) {
+        this.$emit("input", v)
+    }
+    /**
+     * 关闭模态框
+     */
+    cancel() {
+        this.value = false
+    }
+}
