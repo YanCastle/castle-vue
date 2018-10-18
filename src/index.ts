@@ -61,6 +61,7 @@ export class SearchConfig {
 export class VuexConfig {
     Code: string = ""
     PK: string = ""
+    Api: any = {}
 }
 export class OperateConfig {
     Del: boolean = false
@@ -90,7 +91,6 @@ export default class VueList extends Vue {
     Vuex: VuexConfig = new VuexConfig
     //操作权限
     Operate: OperateConfig = new OperateConfig
-    //Table配置
     Table: TableConfig = new TableConfig
     /**
      * 查询结果
@@ -164,7 +164,7 @@ export default class VueList extends Vue {
         }
     }
     selectFile() {
-        let input: any = this.$refs.import
+        let input: any = this.$refs.import;
         if (input) {
             input.value = ""
             input.click()
@@ -176,7 +176,7 @@ export default class VueList extends Vue {
      * 导入
      */
     importXLSX() {
-        let input: any = this.$refs.import
+        let input: any = this.$refs.import;
         if (!input) {
             return;
         }
@@ -205,14 +205,49 @@ export default class VueList extends Vue {
     /**
      * 导出
      */
-    exportXLSX() {
-        //TODO 可能需要导出的范围选择
+    async exportXLSX(FileName:string) {
+        if(!FileName){
+            this.$msg('请传入文件名')
+            return
+        }
+        this.Where.N = 999999
+        let res = await this.Vuex.Api.search(this.Where)
+        let MapFrom = Object.keys(this.Import.Map)
+        let i: any = this.Import.Map
+        let ExcelImport: any[] = []
+        res.L.forEach((row: any) => {
+            let ExcelObject: any = {}
+            MapFrom.forEach((key: string) => {
+                ExcelObject[key] = row[i[key]] ? row[i[key]] : ''
+            })
+            ExcelImport.push(ExcelObject)
+        })
+        writeFileFromJSON({ Data: ExcelImport }, `${FileName}.xlsx`);
     }
     /**
      * 下载模板
      */
-    downloadTemplate() {
+    downloadExcel(ExportMap: Object | Function, FileName: String) {
         //TODO 下载模板
+        if (!ExportMap) {
+            this.$msg('请传入Import.Map')
+            return
+        }
+        if (!FileName) {
+            this.$msg('请输入导出文件名')
+            return
+        }
+        let Template: any = {}
+        for (let i in Object.keys(ExportMap)) {
+            Template[Object.keys(ExportMap)[i]] = ""
+        }
+        writeFileFromJSON({
+                Map: [
+                    Template
+                ]
+            },
+            `${FileName}.xlsx`
+        );
     }
     /**
      * 添加
@@ -221,7 +256,7 @@ export default class VueList extends Vue {
     add(v: any) {
         this.Modal.Type = 'add'
         this.Modal.Data = clone(v)
-        this.Modal.Show = true
+        this.Modal.Show = true;
     }
     /**
      * 编辑
@@ -230,7 +265,7 @@ export default class VueList extends Vue {
     edit(v: any) {
         this.Modal.Type = 'edit'
         this.Modal.Data = clone(v)
-        this.Modal.Show = true
+        this.Modal.Show = true;
     }
     /**
      * 删除
@@ -264,7 +299,8 @@ export default class VueList extends Vue {
     async delW() {
         //TODD 并且删除提示框显示
         if (this.Select.SelectedIDs.length == 0) return
-        this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs }
+        this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
+        }
         this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
             Data: this.Where.W,
             Success: () => {
@@ -289,7 +325,7 @@ export default class VueList extends Vue {
             "确定要删除吗?",
             //确定按钮
             () => {
-                this.delW()
+                this.delW();
             },
             //取消按钮
             () => {},
@@ -397,6 +433,18 @@ export default class VueList extends Vue {
     }
 
     /**
+     * f3
+     * 自动获取输入框焦点
+     */
+    focus() {
+        if (!this.$refs.input) {
+            this.$msg('搜索输入框未绑定ref=input')
+            return
+        }
+        this.$refs.input.focus()
+    }
+
+    /**
      * 组件被加载的时候触发
      */
     _mounted(...Methods: Function[]) {
@@ -416,17 +464,24 @@ export default class VueList extends Vue {
             methods()
         })
     }
+
+    /**
+     * 组件被销毁前触发
+     */
+    _beforeDestroy(...Methods: Function[]) {
+
+    }
 }
 
 /**
  * 模态框配置信息
  */
-export interface OptionsConfig{
-    area?:string[]
-    maxmin?:boolean
-    btn?:string[]
-    yes?:Function
-    btn2?:Function
+export interface OptionsConfig {
+    area ? : string[]
+    maxmin ? : boolean
+    btn ? : string[]
+    yes ? : Function
+    btn2 ? : Function
 }
 
 export class VueEdit extends Vue {
@@ -472,10 +527,10 @@ export class VueEdit extends Vue {
         area: ["80%", "80%"],
         maxmin: true,
         btn: ["确定", "取消"],
-        yes: ()=>{
+        yes: () => {
             this.submit()
         },
-        btn2: ()=>{
+        btn2: () => {
             this.cancel()
         }
     }
@@ -528,5 +583,110 @@ export class VueEdit extends Vue {
      */
     cancel() {
         this.value = false
+    }
+}
+
+
+export class VueImport extends Vue {
+    IsSuccess: number[] = []
+    ExcelImport: any = []
+    Loading: boolean = false
+    @Prop({
+        type: Boolean,
+        required: true,
+        default: false
+    })
+    value: any;
+    @Prop({
+        type: [Object, Array],
+        required: true,
+        default: false
+    })
+    Map: any;
+    @Prop({
+        type: [Object, Array],
+        required: true,
+        default: []
+    })
+    XlsxData: any;
+    @Prop({
+        type: [Object, Array],
+        required: true,
+        default: ""
+    })
+    Vuex: any;
+    @Watch("value")
+    watchValue(n: boolean) {
+        if (n) {
+            let MapFrom = Object.keys(this.Map)
+            this.XlsxData.forEach((row: any) => {
+                let ExcelObject: any = {}
+                MapFrom.forEach((key: string) => {
+                    ExcelObject[this.Map[key]] = row[key] ? row[key] : ''
+                })
+                this.ExcelImport.push(ExcelObject)
+            })
+        } else {
+            this.IsSuccess = []
+            this.ExcelImport = []
+        }
+    }
+
+
+    get ShowModal() {
+        return this.value;
+    }
+
+    set ShowModal(v: boolean) {
+        this.$emit("input", v);
+    }
+    get Progress() {
+        let num = this.IsSuccess.length / this.ExcelImport.length * 100;
+        return num == 100 ? num : num.toFixed(2);
+    }
+
+    Options: OptionsConfig = {
+        area: ["80%", "80%"],
+        maxmin: true,
+        btn: ["确定", "取消"],
+        yes: () => {
+            this.submit();
+        },
+        btn2: () => {
+            this.cancel();
+        }
+    }
+
+    async submit() {
+        if (this.Loading === true) {
+            this.$msg("导入中请稍等");
+            return;
+        }
+        // this.IsSuccess = [];
+        this.Loading = true;
+        for (let i in this.ExcelImport) {
+            try {
+                await this.Vuex.Api.add(this.ExcelImport[i]);
+                this.IsSuccess.push(Number(i));
+            } catch (error) {
+                this.IsSuccess.push(-1);
+            }
+            // this.$store.dispatch(`A_${this.Code.toUpperCase()}_IMPORT`, {
+            //     Data: this.ExcelImport[i],
+            //     Success: () => {
+            //         this.IsSuccess.push(Number(i));
+            //     },
+            //     Error: () => {
+            //         this.IsSuccess.push(-1);
+            //     }
+            // });
+        }
+        this.$msg("导入完成");
+        this.Loading = false;
+    }
+    cancel() {
+        this.value = false;
+        this.IsSuccess = [];
+        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`);
     }
 }
