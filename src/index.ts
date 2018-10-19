@@ -14,7 +14,6 @@ import {
 import {
     readAsJSON,
     writeFileFromJSON,
-    writeFileFromTable
 } from 'castle-xlsx'
 
 import {
@@ -35,8 +34,8 @@ export class SelectConfig {
 export class ImportConfig {
     //导入的标题处理算法
     Map: {
-        [index: string]: string | Function
-    } = {}
+        [index: string]: string
+    } | Function = {}
     //导入的数据
     XLSXData: any[] = []
     SheetName: string = ""
@@ -46,8 +45,8 @@ export class ImportConfig {
 export class ExportConfig {
     //导出的标题处理算法
     Map: {
-        [index: string]: string | Function
-    } = {}
+        [index: string]: string
+    } | Function = {}
     //导出的数据
     XLSXData: any[] = []
     SheetName: string = ""
@@ -205,49 +204,54 @@ export default class VueList extends Vue {
     /**
      * 导出
      */
-    async exportXLSX(FileName:string) {
-        if(!FileName){
+    async exportXLSX(FileName: string) {
+        if (!FileName) {
             this.$msg('请传入文件名')
             return
         }
-        this.Where.N = 999999
-        let res = await this.Vuex.Api.search(this.Where)
-        let MapFrom = Object.keys(this.Import.Map)
-        let i: any = this.Import.Map
-        let ExcelImport: any[] = []
-        res.L.forEach((row: any) => {
-            let ExcelObject: any = {}
-            MapFrom.forEach((key: string) => {
-                ExcelObject[key] = row[i[key]] ? row[i[key]] : ''
+        let ExcelExport: any[] = []
+        if ('function' === typeof this.Export.Map) {
+            this.Export.Map()
+        } else {
+            this.Where.N = 999999
+            let res = await this.Vuex.Api.search(this.Where)
+            let MapFrom = Object.keys(this.Export.Map)
+            let i: any = this.Export.Map
+            res.L.forEach((row: any) => {
+                let ExcelObject: any = {}
+                MapFrom.forEach((key: string) => {
+                    ExcelObject[key] = row[i[key]] ? row[i[key]] : ''
+                })
+                ExcelExport.push(ExcelObject)
             })
-            ExcelImport.push(ExcelObject)
-        })
-        writeFileFromJSON({ Data: ExcelImport }, `${FileName}.xlsx`);
+        }
+        writeFileFromJSON({
+            Data: ExcelExport
+        }, `${FileName}.xlsx`)
     }
     /**
      * 下载模板
      */
-    downloadExcel(ExportMap: Object | Function, FileName: String) {
-        //TODO 下载模板
-        if (!ExportMap) {
-            this.$msg('请传入Import.Map')
-            return
-        }
+    downloadExcel(FileName: String) {
         if (!FileName) {
             this.$msg('请输入导出文件名')
             return
         }
-        let Template: any = {}
-        for (let i in Object.keys(ExportMap)) {
-            Template[Object.keys(ExportMap)[i]] = ""
+        if ('function' === typeof this.Import.Map) {
+            this.Import.Map()
+        } else {
+            let Template: any = {}
+            for (let i in Object.keys(this.Import.Map)) {
+                Template[Object.keys(this.Import.Map)[i]] = ""
+            }
+            writeFileFromJSON({
+                    Map: [
+                        Template
+                    ]
+                },
+                `${FileName}.xlsx`
+            );
         }
-        writeFileFromJSON({
-                Map: [
-                    Template
-                ]
-            },
-            `${FileName}.xlsx`
-        );
     }
     /**
      * 添加
@@ -588,9 +592,11 @@ export class VueEdit extends Vue {
 
 
 export class VueImport extends Vue {
-    IsSuccess: number[] = []
+    Success: number[] = []
+    Error: number[] = []
     ExcelImport: any = []
     Loading: boolean = false
+    Progress: number = 0
     @Prop({
         type: Boolean,
         required: true,
@@ -618,20 +624,25 @@ export class VueImport extends Vue {
     @Watch("value")
     watchValue(n: boolean) {
         if (n) {
-            let MapFrom = Object.keys(this.Map)
-            this.XlsxData.forEach((row: any) => {
-                let ExcelObject: any = {}
-                MapFrom.forEach((key: string) => {
-                    ExcelObject[this.Map[key]] = row[key] ? row[key] : ''
+            if ('function' === typeof this.Map) {
+                this.ExcelImport = this.Map()
+            } else {
+                let MapFrom = Object.keys(this.Map)
+                this.XlsxData.forEach((row: any) => {
+                    let ExcelObject: any = {}
+                    MapFrom.forEach((key: string) => {
+                        ExcelObject[this.Map[key]] = row[key] ? row[key] : ''
+                    })
+                    this.ExcelImport.push(ExcelObject)
                 })
-                this.ExcelImport.push(ExcelObject)
-            })
+            }
         } else {
-            this.IsSuccess = []
+            this.Success = []
+            this.Error = []
             this.ExcelImport = []
+            this.Vuex.Api.search()
         }
     }
-
 
     get ShowModal() {
         return this.value;
@@ -640,10 +651,10 @@ export class VueImport extends Vue {
     set ShowModal(v: boolean) {
         this.$emit("input", v);
     }
-    get Progress() {
-        let num = this.IsSuccess.length / this.ExcelImport.length * 100;
-        return num == 100 ? num : num.toFixed(2);
-    }
+    // get Progress() {
+    //     let num = this.Success.concat(this.Error).length / this.ExcelImport.length * 100;
+    //     return num == 100 ? num : num.toFixed(2);
+    // }
 
     Options: OptionsConfig = {
         area: ["80%", "80%"],
@@ -662,31 +673,22 @@ export class VueImport extends Vue {
             this.$msg("导入中请稍等");
             return;
         }
-        // this.IsSuccess = [];
+        this.Success = [];
+        this.Error = []
         this.Loading = true;
         for (let i in this.ExcelImport) {
             try {
                 await this.Vuex.Api.add(this.ExcelImport[i]);
-                this.IsSuccess.push(Number(i));
+                this.Success.push(Number(i));
             } catch (error) {
-                this.IsSuccess.push(-1);
+                this.Error.push(Number(i));
             }
-            // this.$store.dispatch(`A_${this.Code.toUpperCase()}_IMPORT`, {
-            //     Data: this.ExcelImport[i],
-            //     Success: () => {
-            //         this.IsSuccess.push(Number(i));
-            //     },
-            //     Error: () => {
-            //         this.IsSuccess.push(-1);
-            //     }
-            // });
+            this.Progress = this.Success.concat(this.Error).length / this.ExcelImport.length * 100;
         }
         this.$msg("导入完成");
         this.Loading = false;
     }
     cancel() {
         this.value = false;
-        this.IsSuccess = [];
-        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_SEARCH`);
     }
 }
