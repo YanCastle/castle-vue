@@ -451,12 +451,12 @@ export default class VueList extends Vue {
     /**
      * 组件被加载的时候触发
      */
-    _mounted(...Methods: Function[]) {
+    async _mounted(...Methods: Function[]) {
         if (this.Result.T == 0) {
-            this.search()
+            await this.search()
         }
-        Methods.forEach((methods) => {
-            methods()
+        Methods.forEach(async (methods) => {
+            await methods()
         })
     }
 
@@ -464,8 +464,8 @@ export default class VueList extends Vue {
      * 组件被创建的时候触发
      */
     _created(...Methods: Function[]) {
-        Methods.forEach((methods) => {
-            methods()
+        Methods.forEach(async (methods) => {
+            await methods()
         })
     }
 
@@ -491,6 +491,8 @@ export interface OptionsConfig {
 export class VueEdit extends Vue {
     //编辑数据
     EditData: any = {}
+    //验证规则
+    Rules: object = {}
     //模态框显示与否
     @Prop({
         type: Boolean,
