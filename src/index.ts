@@ -60,7 +60,7 @@ export class SearchConfig {
 export class VuexConfig {
     Code: string = ""
     PK: string = ""
-    Api: any = {}
+    API: any = {}
 }
 export class OperateConfig {
     Del: boolean = false
