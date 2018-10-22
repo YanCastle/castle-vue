@@ -143,7 +143,7 @@ export default class VueList extends Vue {
                 this.Select.SelectedIDs.push(e[this.Vuex.PK])
             });
         } else {
-            if (this.Select.SelectedIDs.length == this.Where.N) this.Select.SelectedIDs = [];
+            if (this.Select.SelectedIDs.length == this.Result.L.length) this.Select.SelectedIDs = [];
         }
     }
     /**
@@ -158,7 +158,7 @@ export default class VueList extends Vue {
                 if (this.Select.All) this.Select.All = false
             } else {
                 this.Select.SelectedIDs.push(v[this.Vuex.PK])
-                if (this.Select.SelectedIDs.length == this.Where.N) this.Select.All = true
+                if (this.Select.SelectedIDs.length == this.Result.L.length) this.Select.All = true
             }
         }
     }
