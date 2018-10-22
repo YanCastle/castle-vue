@@ -307,19 +307,20 @@ export default class VueList extends Vue {
     }
     async delW() {
         //TODD 并且删除提示框显示
-        if (this.Select.SelectedIDs.length == 0 && !this.Select.CloseAlert) return
-        this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
-        }
-        this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
-            Data: this.Where.W,
-            Success: () => {
-                this.Select.All = false
-                this.$msg('删除成功')
-            },
-            Error: () => {
-                this.$msg('删除失败')
+        if (this.Select.SelectedIDs.length > 0 && 'function'===this.Select.CloseAlert) {
+            this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
             }
-        })
+            this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
+                Data: this.Where.W,
+                Success: () => {
+                    this.Select.All = false
+                    this.$msg('删除成功')
+                },
+                Error: () => {
+                    this.$msg('删除失败')
+                }
+            })
+        }
     }
     /**
      * 批量删除
@@ -403,7 +404,7 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if (this.Table.Index == -1) this.Table.Index = this.Where.N - 1
+        if (this.Table.Index == -1) this.Table.Index = this.Where.Result.L.length - 1
         else this.Table.Index--
     }
 
@@ -412,7 +413,7 @@ export default class VueList extends Vue {
      * tr Index++
      */
     down() {
-        if (this.Table.Index < this.Where.N - 1) this.Table.Index++
+        if (this.Table.Index < this.Where.Result.L.length - 1) this.Table.Index++
         else this.Table.Index = -1
     }
 
@@ -613,7 +614,9 @@ export class VueEdit extends Vue {
      * 点击确定按钮
      */
     submit() {
-        this.Type == "add" ? this.add() : this.edit()
+        if(this.value){
+            this.Type == "add" ? this.add() : this.edit()
+        }
     }
     /**
      * 添加
