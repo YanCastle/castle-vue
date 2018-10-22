@@ -11,6 +11,8 @@ import {
     SearchWhere
 } from "castle-vuex"
 
+import hotkey from 'castle-hotkey'
+
 import {
     readAsJSON,
     writeFileFromJSON,
@@ -29,6 +31,7 @@ export class ModalConfig {
 export class SelectConfig {
     All: boolean = false;
     SelectedIDs: string[] = [];
+    CloseAlert: any = ""
 }
 
 export class ImportConfig {
@@ -90,6 +93,7 @@ export default class VueList extends Vue {
     Vuex: VuexConfig = new VuexConfig
     //操作权限
     Operate: OperateConfig = new OperateConfig
+    //table
     Table: TableConfig = new TableConfig
     /**
      * 查询结果
@@ -214,7 +218,7 @@ export default class VueList extends Vue {
             this.Export.Map()
         } else {
             this.Where.N = 999999
-            let res = await this.Vuex.Api.search(this.Where)
+            let res = await this.Vuex.API.search(this.Where)
             let MapFrom = Object.keys(this.Export.Map)
             let i: any = this.Export.Map
             res.L.forEach((row: any) => {
@@ -276,7 +280,7 @@ export default class VueList extends Vue {
      * @param v 
      */
     del(v: any) {
-        this.$confirm(
+        let index = this.$confirm(
             //内容
             "确定要删除吗?",
             //确定按钮
@@ -299,10 +303,11 @@ export default class VueList extends Vue {
                 title: "信息"
             }
         );
+        this.Select.CloseAlert = index
     }
     async delW() {
         //TODD 并且删除提示框显示
-        if (this.Select.SelectedIDs.length == 0) return
+        if (this.Select.SelectedIDs.length == 0 && !this.Select.CloseAlert) return
         this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
         }
         this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
@@ -324,7 +329,7 @@ export default class VueList extends Vue {
             this.$msg("请选择需要删除的数据")
             return;
         }
-        this.$confirm(
+        let index = this.$confirm(
             //内容
             "确定要删除吗?",
             //确定按钮
@@ -339,6 +344,7 @@ export default class VueList extends Vue {
                 title: "信息"
             }
         );
+        this.Select.CloseAlert = index
     }
     /**
      * 查询
@@ -449,12 +455,70 @@ export default class VueList extends Vue {
     }
 
     /**
+     * 关闭删除弹框
+     */
+    closeAlert() {
+        if (this.Select.CloseAlert) {
+            this.Select.CloseAlert()
+            this.Select.All = false
+        }
+    }
+
+    /**
+     * 监听键盘事件
+     */
+    listenKey() {
+        hotkey.listen("ctrl+a,del,enter,esc,left,right,up,down,f1,f2,space", "List", (event, handler) => {
+            switch (handler.key) {
+                case "ctrl+a":
+                    this.isSelectAll()
+                    break;
+                case "del":
+                    this.batchDel();
+                    break;
+                case "enter":
+                    this.delW()
+                    break;
+                case "esc":
+                    this.closeAlert()
+                    break;
+                case "left":
+                    this.previous();
+                    break;
+                case "right":
+                    this.next();
+                    break;
+                case "up":
+                    this.up();
+                    break;
+                case "down":
+                    this.down();
+                    break;
+                case "f2":
+                    this.showEditModal();
+                    break;
+                case "f1":
+                    this.showAddModal();
+                    break;
+                case "space":
+                    this.space();
+                    break;
+            }
+        })
+    }
+    /**
+     * 移除所有监听事件
+     */
+    removeAll() {
+        hotkey.removeAll()
+    }
+    /**
      * 组件被加载的时候触发
      */
     async _mounted(...Methods: Function[]) {
-        if (this.Result.T == 0) {
-            await this.search()
-        }
+        // if (this.Result.T == 0) {
+        await this.search()
+        // }
         Methods.forEach(async (methods) => {
             await methods()
         })
@@ -464,6 +528,7 @@ export default class VueList extends Vue {
      * 组件被创建的时候触发
      */
     _created(...Methods: Function[]) {
+        this.listenKey()
         Methods.forEach(async (methods) => {
             await methods()
         })
@@ -473,7 +538,7 @@ export default class VueList extends Vue {
      * 组件被销毁前触发
      */
     _beforeDestroy(...Methods: Function[]) {
-
+        this.removeAll()
     }
 }
 
@@ -524,7 +589,11 @@ export class VueEdit extends Vue {
 
     @Watch('value')
     watchValue(n: boolean) {
-        if (n) this.EditData = clone(this.Data)
+        if (n) {
+            this.EditData = clone(this.Data)
+        } else {
+
+        }
     }
     /**
      * 模态框配置
@@ -590,6 +659,27 @@ export class VueEdit extends Vue {
     cancel() {
         this.value = false
     }
+    /**
+     * 注册键盘事件
+     */
+    listenKey() {
+        hotkey.listen("esc,enter", "Edit", (event, handler) => {
+            switch (handler.key) {
+                case "esc":
+                    this.cancel()
+                    break
+                case "enter":
+                    this.submit()
+                    break
+            }
+        });
+    }
+    /**
+     * 移除所有监听事件
+     */
+    removeAll() {
+        hotkey.removeAll()
+    }
 }
 
 
@@ -642,7 +732,7 @@ export class VueImport extends Vue {
             this.Success = []
             this.Error = []
             this.ExcelImport = []
-            this.Vuex.Api.search()
+            this.Vuex.API.search()
         }
     }
 
@@ -680,7 +770,7 @@ export class VueImport extends Vue {
         this.Loading = true;
         for (let i in this.ExcelImport) {
             try {
-                await this.Vuex.Api.add(this.ExcelImport[i]);
+                await this.Vuex.API.add(this.ExcelImport[i]);
                 this.Success.push(Number(i));
             } catch (error) {
                 this.Error.push(Number(i));
