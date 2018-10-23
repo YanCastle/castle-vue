@@ -307,7 +307,7 @@ export default class VueList extends Vue {
     }
     async delW() {
         //TODD 并且删除提示框显示
-        if (this.Select.SelectedIDs.length > 0 && 'function'===this.Select.CloseAlert) {
+        if (this.Select.SelectedIDs.length > 0 && 'function'=== typeof this.Select.CloseAlert) {
             this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
             }
             this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
@@ -404,7 +404,7 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if (this.Table.Index == -1) this.Table.Index = this.Where.Result.L.length - 1
+        if (this.Table.Index == -1) this.Table.Index = this.Result.L.length - 1
         else this.Table.Index--
     }
 
@@ -413,7 +413,7 @@ export default class VueList extends Vue {
      * tr Index++
      */
     down() {
-        if (this.Table.Index < this.Where.Result.L.length - 1) this.Table.Index++
+        if (this.Table.Index < this.Result.L.length - 1) this.Table.Index++
         else this.Table.Index = -1
     }
 

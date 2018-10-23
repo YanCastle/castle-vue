@@ -238,7 +238,7 @@ class VueList extends vue_property_decorator_1.Vue {
         this.Select.CloseAlert = index;
     }
     async delW() {
-        if (this.Select.SelectedIDs.length > 0 && 'function' === this.Select.CloseAlert) {
+        if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
             this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
             };
             this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
@@ -289,12 +289,12 @@ class VueList extends vue_property_decorator_1.Vue {
     }
     up() {
         if (this.Table.Index == -1)
-            this.Table.Index = this.Where.Result.L.length - 1;
+            this.Table.Index = this.Result.L.length - 1;
         else
             this.Table.Index--;
     }
     down() {
-        if (this.Table.Index < this.Where.Result.L.length - 1)
+        if (this.Table.Index < this.Result.L.length - 1)
             this.Table.Index++;
         else
             this.Table.Index = -1;
