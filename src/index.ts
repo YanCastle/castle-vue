@@ -215,7 +215,7 @@ export default class VueList extends Vue {
         }
         let ExcelExport: any[] = []
         if ('function' === typeof this.Export.Map) {
-            this.Export.Map()
+            ExcelExport = await this.Export.Map()
         } else {
             this.Where.N = 999999
             let res = await this.Vuex.API.search(this.Where)

@@ -171,7 +171,7 @@ class VueList extends vue_property_decorator_1.Vue {
         }
         let ExcelExport = [];
         if ('function' === typeof this.Export.Map) {
-            this.Export.Map();
+            ExcelExport = await this.Export.Map();
         }
         else {
             this.Where.N = 999999;
