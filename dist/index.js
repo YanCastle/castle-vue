@@ -174,7 +174,8 @@ class VueList extends vue_property_decorator_1.Vue {
             ExcelExport = await this.Export.Map();
         }
         else {
-            this.Where.N = 999999;
+            let Where = lodash_1.cloneDeep(this.Where);
+            Where.N = 999999;
             let res = await this.Vuex.API.search(this.Where);
             let MapFrom = Object.keys(this.Export.Map);
             let i = this.Export.Map;

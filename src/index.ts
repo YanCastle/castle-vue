@@ -217,7 +217,8 @@ export default class VueList extends Vue {
         if ('function' === typeof this.Export.Map) {
             ExcelExport = await this.Export.Map()
         } else {
-            this.Where.N = 999999
+            let Where = clone(this.Where)
+            Where.N=999999
             let res = await this.Vuex.API.search(this.Where)
             let MapFrom = Object.keys(this.Export.Map)
             let i: any = this.Export.Map
