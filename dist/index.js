@@ -228,8 +228,8 @@ class VueList extends vue_property_decorator_1.Vue {
                 Success: () => {
                     this.$msg("删除成功");
                 },
-                Error: () => {
-                    this.$msg("删除失败");
+                Error: (e) => {
+                    this.$msg(e.message || "删除失败");
                 }
             });
         }, () => { }, {
@@ -240,7 +240,8 @@ class VueList extends vue_property_decorator_1.Vue {
     }
     async delW() {
         if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
-            this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
+            this.Where.W[this.Vuex.PK] = {
+                in: this.Select.SelectedIDs
             };
             this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
                 Data: this.Where.W,
@@ -248,8 +249,8 @@ class VueList extends vue_property_decorator_1.Vue {
                     this.Select.All = false;
                     this.$msg('删除成功');
                 },
-                Error: () => {
-                    this.$msg('删除失败');
+                Error: (e) => {
+                    this.$msg(e.message || '删除失败');
                 }
             });
         }
@@ -430,8 +431,8 @@ class VueEdit extends vue_property_decorator_1.Vue {
                 this.$msg("添加成功");
                 this.value = false;
             },
-            Error: () => {
-                this.$msg("添加失败");
+            Error: (e) => {
+                this.$msg(e.message || "添加失败");
             }
         });
     }
@@ -442,8 +443,8 @@ class VueEdit extends vue_property_decorator_1.Vue {
                 this.$msg("修改成功");
                 this.value = false;
             },
-            Error: () => {
-                this.$msg("修改失败");
+            Error: (e) => {
+                this.$msg(e.message || "修改失败");
             }
         });
     }

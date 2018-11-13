@@ -250,10 +250,10 @@ export default class VueList extends Vue {
                 Template[Object.keys(this.Import.Map)[i]] = ""
             }
             writeFileFromJSON({
-                    Map: [
-                        Template
-                    ]
-                },
+                Map: [
+                    Template
+                ]
+            },
                 `${FileName}.xlsx`
             );
         }
@@ -291,13 +291,13 @@ export default class VueList extends Vue {
                     Success: () => {
                         this.$msg("删除成功")
                     },
-                    Error: () => {
-                        this.$msg("删除失败")
+                    Error: (e: { message: string }) => {
+                        this.$msg(e.message || "删除失败")
                     }
                 });
             },
             //取消按钮
-            () => {},
+            () => { },
             //标题
             {
                 icon: 3,
@@ -308,8 +308,9 @@ export default class VueList extends Vue {
     }
     async delW() {
         //TODD 并且删除提示框显示
-        if (this.Select.SelectedIDs.length > 0 && 'function'=== typeof this.Select.CloseAlert) {
-            this.Where.W[this.Vuex.PK] = { in: this.Select.SelectedIDs
+        if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
+            this.Where.W[this.Vuex.PK] = {
+                in: this.Select.SelectedIDs
             }
             this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
                 Data: this.Where.W,
@@ -317,8 +318,8 @@ export default class VueList extends Vue {
                     this.Select.All = false
                     this.$msg('删除成功')
                 },
-                Error: () => {
-                    this.$msg('删除失败')
+                Error: (e: { message: string }) => {
+                    this.$msg(e.message || '删除失败')
                 }
             })
         }
@@ -339,7 +340,7 @@ export default class VueList extends Vue {
                 this.delW();
             },
             //取消按钮
-            () => {},
+            () => { },
             //标题
             {
                 icon: 3,
@@ -548,11 +549,11 @@ export default class VueList extends Vue {
  * 模态框配置信息
  */
 export interface OptionsConfig {
-    area ? : string[]
-    maxmin ? : boolean
-    btn ? : string[]
-    yes ? : Function
-    btn2 ? : Function
+    area?: string[]
+    maxmin?: boolean
+    btn?: string[]
+    yes?: Function
+    btn2?: Function
 }
 
 export class VueEdit extends Vue {
@@ -615,7 +616,7 @@ export class VueEdit extends Vue {
      * 点击确定按钮
      */
     submit() {
-        if(this.value){
+        if (this.value) {
             this.Type == "add" ? this.add() : this.edit()
         }
     }
@@ -629,8 +630,8 @@ export class VueEdit extends Vue {
                 this.$msg("添加成功")
                 this.value = false
             },
-            Error: () => {
-                this.$msg("添加失败")
+            Error: (e: { message: string }) => {
+                this.$msg(e.message || "添加失败")
             }
         });
     }
@@ -644,8 +645,8 @@ export class VueEdit extends Vue {
                 this.$msg("修改成功")
                 this.value = false;
             },
-            Error: () => {
-                this.$msg("修改失败")
+            Error: (e: { message: string }) => {
+                this.$msg(e.message || "修改失败")
             }
         });
     }
