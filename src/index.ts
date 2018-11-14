@@ -133,8 +133,8 @@ export default class VueList extends Vue {
      * 更具关键词模糊查询
      */
     @Watch("Where.Keyword")
-    watchKeyword(n: string) {
-        //TODO 更具关键词模糊查询
+    watchKeyword() {
+        this.search()
     }
     /**
      * 全选与反选

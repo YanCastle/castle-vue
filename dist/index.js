@@ -99,7 +99,8 @@ class VueList extends vue_property_decorator_1.Vue {
         this.Select.All = false;
         this.search();
     }
-    watchKeyword(n) {
+    watchKeyword() {
+        this.search();
     }
     selectAll() {
         if (this.Select.All) {
