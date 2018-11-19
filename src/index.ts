@@ -386,9 +386,11 @@ export default class VueList extends Vue {
      * 上一页
      */
     previous() {
-        if (this.Where.P > 1) this.Where.P--
-        else this.Where.P = Math.ceil(this.Result.T / this.Where.N)
-        this.Table.Index = -1
+        if(this.Modal.Show==false){
+            if (this.Where.P > 1) this.Where.P--
+            else this.Where.P = Math.ceil(this.Result.T / this.Where.N)
+            this.Table.Index = -1
+        }
     }
 
     /**
@@ -396,9 +398,11 @@ export default class VueList extends Vue {
      * 下一页
      */
     next() {
-        if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
-        else this.Where.P = 1
-        this.Table.Index = -1
+        if(this.Modal.Show==false){
+            if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
+            else this.Where.P = 1
+            this.Table.Index = -1
+        }
     }
 
     /**
@@ -406,8 +410,10 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if (this.Table.Index == -1) this.Table.Index = this.Result.L.length - 1
-        else this.Table.Index--
+        if(this.Modal.Show==false){
+            if (this.Table.Index == -1) this.Table.Index = this.Result.L.length - 1
+            else this.Table.Index--
+        }
     }
 
     /**
@@ -415,8 +421,10 @@ export default class VueList extends Vue {
      * tr Index++
      */
     down() {
-        if (this.Table.Index < this.Result.L.length - 1) this.Table.Index++
-        else this.Table.Index = -1
+        if(this.Modal.Show==false){
+            if (this.Table.Index < this.Result.L.length - 1) this.Table.Index++
+            else this.Table.Index = -1
+        }
     }
 
     /**
@@ -424,16 +432,20 @@ export default class VueList extends Vue {
      * 单选
      */
     space() {
-        if (this.Table.Index < 0) return
-        this.selectOne(this.Result.L[this.Table.Index])
+        if(this.Modal.Show==false){
+            if (this.Table.Index < 0) return
+            this.selectOne(this.Result.L[this.Table.Index])
+        }
     }
 
     /**
      * f1
      * 显示添加模态框
      */
-    showAddModal() {
-        this.add({})
+    showAddModal(v?:any) {
+        if(this.Modal.Show==false){
+            this.add(v?v:{})
+        }
     }
 
     /**
@@ -441,8 +453,10 @@ export default class VueList extends Vue {
      * 显示编辑模态框
      */
     showEditModal() {
-        if (this.Table.Index < 0) return
-        this.edit(this.Result.L[this.Table.Index])
+        if(this.Modal.Show==false){
+            if (this.Table.Index < 0) return
+            this.edit(this.Result.L[this.Table.Index])
+        }
     }
 
     /**

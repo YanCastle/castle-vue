@@ -54,7 +54,7 @@ export default class VueList extends Vue {
     readonly canDel: boolean;
     readonly canEdit: boolean;
     page(): void;
-    watchKeyword(n: string): void;
+    watchKeyword(): void;
     selectAll(): void;
     selectOne(v: any): void;
     selectFile(): void;
@@ -73,7 +73,7 @@ export default class VueList extends Vue {
     up(): void;
     down(): void;
     space(): void;
-    showAddModal(): void;
+    showAddModal(v?: any): void;
     showEditModal(): void;
     focus(): void;
     closeAlert(): void;

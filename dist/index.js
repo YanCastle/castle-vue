@@ -277,43 +277,57 @@ class VueList extends vue_property_decorator_1.Vue {
         this.Select.All == true ? this.Select.All = false : this.Select.All = true;
     }
     previous() {
-        if (this.Where.P > 1)
-            this.Where.P--;
-        else
-            this.Where.P = Math.ceil(this.Result.T / this.Where.N);
-        this.Table.Index = -1;
+        if (this.Modal.Show == false) {
+            if (this.Where.P > 1)
+                this.Where.P--;
+            else
+                this.Where.P = Math.ceil(this.Result.T / this.Where.N);
+            this.Table.Index = -1;
+        }
     }
     next() {
-        if (this.Where.P < Math.ceil(this.Result.T / this.Where.N))
-            this.Where.P++;
-        else
-            this.Where.P = 1;
-        this.Table.Index = -1;
+        if (this.Modal.Show == false) {
+            if (this.Where.P < Math.ceil(this.Result.T / this.Where.N))
+                this.Where.P++;
+            else
+                this.Where.P = 1;
+            this.Table.Index = -1;
+        }
     }
     up() {
-        if (this.Table.Index == -1)
-            this.Table.Index = this.Result.L.length - 1;
-        else
-            this.Table.Index--;
+        if (this.Modal.Show == false) {
+            if (this.Table.Index == -1)
+                this.Table.Index = this.Result.L.length - 1;
+            else
+                this.Table.Index--;
+        }
     }
     down() {
-        if (this.Table.Index < this.Result.L.length - 1)
-            this.Table.Index++;
-        else
-            this.Table.Index = -1;
+        if (this.Modal.Show == false) {
+            if (this.Table.Index < this.Result.L.length - 1)
+                this.Table.Index++;
+            else
+                this.Table.Index = -1;
+        }
     }
     space() {
-        if (this.Table.Index < 0)
-            return;
-        this.selectOne(this.Result.L[this.Table.Index]);
+        if (this.Modal.Show == false) {
+            if (this.Table.Index < 0)
+                return;
+            this.selectOne(this.Result.L[this.Table.Index]);
+        }
     }
-    showAddModal() {
-        this.add({});
+    showAddModal(v) {
+        if (this.Modal.Show == false) {
+            this.add(v ? v : {});
+        }
     }
     showEditModal() {
-        if (this.Table.Index < 0)
-            return;
-        this.edit(this.Result.L[this.Table.Index]);
+        if (this.Modal.Show == false) {
+            if (this.Table.Index < 0)
+                return;
+            this.edit(this.Result.L[this.Table.Index]);
+        }
     }
     focus() {
         if (!this.$refs.input) {
