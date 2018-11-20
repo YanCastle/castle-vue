@@ -30,7 +30,7 @@ export class ModalConfig {
 //选择
 export class SelectConfig {
     All: boolean = false;
-    SelectedIDs: string[] = [];
+    SelectedIDs: string|number[] = [];
     CloseAlert: Function | null = null
 }
 
@@ -321,6 +321,7 @@ export default class VueList extends Vue {
                     Success: () => {
                         this.Select.All = false
                         this.Select.CloseAlert=null
+                        this.Select.SelectedIDs=[]
                         this.$msg('删除成功')
                     },
                     Error: (e: { message: string }) => {

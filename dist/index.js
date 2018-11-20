@@ -254,6 +254,7 @@ class VueList extends vue_property_decorator_1.Vue {
                     Success: () => {
                         this.Select.All = false;
                         this.Select.CloseAlert = null;
+                        this.Select.SelectedIDs = [];
                         this.$msg('删除成功');
                     },
                     Error: (e) => {
