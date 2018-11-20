@@ -23,7 +23,7 @@ class SelectConfig {
     constructor() {
         this.All = false;
         this.SelectedIDs = [];
-        this.CloseAlert = "";
+        this.CloseAlert = null;
     }
 }
 exports.SelectConfig = SelectConfig;
@@ -223,37 +223,44 @@ class VueList extends vue_property_decorator_1.Vue {
         this.Modal.Show = true;
     }
     del(v) {
-        let index = this.$confirm("确定要删除吗?", () => {
-            this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL`, {
-                Data: v,
-                Success: () => {
-                    this.$msg("删除成功");
-                },
-                Error: (e) => {
-                    this.$msg(e.message || "删除失败");
-                }
+        if (this.Modal.Show == false && this.Operate.Del == true) {
+            let index = this.$confirm("确定要删除吗?", () => {
+                this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL`, {
+                    Data: v,
+                    Success: () => {
+                        this.Select.All = false;
+                        this.Select.CloseAlert = null;
+                        this.$msg("删除成功");
+                    },
+                    Error: (e) => {
+                        this.$msg(e.message || "删除失败");
+                    }
+                });
+            }, () => { }, {
+                icon: 3,
+                title: "信息"
             });
-        }, () => { }, {
-            icon: 3,
-            title: "信息"
-        });
-        this.Select.CloseAlert = index;
+            this.Select.CloseAlert = index;
+        }
     }
     async delW() {
-        if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
-            this.Where.W[this.Vuex.PK] = {
-                in: this.Select.SelectedIDs
-            };
-            this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
-                Data: this.Where.W,
-                Success: () => {
-                    this.Select.All = false;
-                    this.$msg('删除成功');
-                },
-                Error: (e) => {
-                    this.$msg(e.message || '删除失败');
-                }
-            });
+        if (this.Modal.Show == false && this.Operate.Del == true) {
+            if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
+                this.Where.W[this.Vuex.PK] = {
+                    in: this.Select.SelectedIDs
+                };
+                this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
+                    Data: this.Where.W,
+                    Success: () => {
+                        this.Select.All = false;
+                        this.Select.CloseAlert = null;
+                        this.$msg('删除成功');
+                    },
+                    Error: (e) => {
+                        this.$msg(e.message || '删除失败');
+                    }
+                });
+            }
         }
     }
     batchDel() {
@@ -277,57 +284,43 @@ class VueList extends vue_property_decorator_1.Vue {
         this.Select.All == true ? this.Select.All = false : this.Select.All = true;
     }
     previous() {
-        if (this.Modal.Show == false) {
-            if (this.Where.P > 1)
-                this.Where.P--;
-            else
-                this.Where.P = Math.ceil(this.Result.T / this.Where.N);
-            this.Table.Index = -1;
-        }
+        if (this.Where.P > 1)
+            this.Where.P--;
+        else
+            this.Where.P = Math.ceil(this.Result.T / this.Where.N);
+        this.Table.Index = -1;
     }
     next() {
-        if (this.Modal.Show == false) {
-            if (this.Where.P < Math.ceil(this.Result.T / this.Where.N))
-                this.Where.P++;
-            else
-                this.Where.P = 1;
-            this.Table.Index = -1;
-        }
+        if (this.Where.P < Math.ceil(this.Result.T / this.Where.N))
+            this.Where.P++;
+        else
+            this.Where.P = 1;
+        this.Table.Index = -1;
     }
     up() {
-        if (this.Modal.Show == false) {
-            if (this.Table.Index == -1)
-                this.Table.Index = this.Result.L.length - 1;
-            else
-                this.Table.Index--;
-        }
+        if (this.Table.Index == -1)
+            this.Table.Index = this.Result.L.length - 1;
+        else
+            this.Table.Index--;
     }
     down() {
-        if (this.Modal.Show == false) {
-            if (this.Table.Index < this.Result.L.length - 1)
-                this.Table.Index++;
-            else
-                this.Table.Index = -1;
-        }
+        if (this.Table.Index < this.Result.L.length - 1)
+            this.Table.Index++;
+        else
+            this.Table.Index = -1;
     }
     space() {
-        if (this.Modal.Show == false) {
-            if (this.Table.Index < 0)
-                return;
-            this.selectOne(this.Result.L[this.Table.Index]);
-        }
+        if (this.Table.Index < 0)
+            return;
+        this.selectOne(this.Result.L[this.Table.Index]);
     }
-    showAddModal(v) {
-        if (this.Modal.Show == false) {
-            this.add(v ? v : {});
-        }
+    showAddModal() {
+        this.add({});
     }
     showEditModal() {
-        if (this.Modal.Show == false) {
-            if (this.Table.Index < 0)
-                return;
-            this.edit(this.Result.L[this.Table.Index]);
-        }
+        if (this.Table.Index < 0)
+            return;
+        this.edit(this.Result.L[this.Table.Index]);
     }
     focus() {
         if (!this.$refs.input) {
@@ -337,46 +330,55 @@ class VueList extends vue_property_decorator_1.Vue {
         this.$refs.input.focus();
     }
     closeAlert() {
-        if (this.Select.CloseAlert) {
-            this.Select.CloseAlert();
-            this.Select.All = false;
-        }
+        this.Select.CloseAlert();
+        this.Select.All = false;
     }
     listenKey() {
         castle_hotkey_1.default.listen("ctrl+a,del,enter,esc,left,right,up,down,f1,f2,space", "List", (event, handler) => {
             switch (handler.key) {
                 case "ctrl+a":
-                    this.isSelectAll();
+                    if (this.Modal.Show == false && this.Operate.Del == true)
+                        this.isSelectAll();
                     break;
                 case "del":
-                    this.batchDel();
+                    if (this.Modal.Show == false && this.Operate.Del == true)
+                        this.batchDel();
                     break;
                 case "enter":
-                    this.delW();
+                    if (this.Modal.Show == false && this.Operate.Del == true)
+                        this.delW();
                     break;
                 case "esc":
-                    this.closeAlert();
+                    if ('function' == typeof this.Select.CloseAlert)
+                        this.closeAlert();
                     break;
                 case "left":
-                    this.previous();
+                    if (this.Modal.Show == false)
+                        this.previous();
                     break;
                 case "right":
-                    this.next();
+                    if (this.Modal.Show == false)
+                        this.next();
                     break;
                 case "up":
-                    this.up();
+                    if (this.Modal.Show == false)
+                        this.up();
                     break;
                 case "down":
-                    this.down();
+                    if (this.Modal.Show == false)
+                        this.down();
                     break;
                 case "f2":
-                    this.showEditModal();
+                    if (this.Modal.Show == false && this.Operate.Edit == true)
+                        this.showEditModal();
                     break;
                 case "f1":
-                    this.showAddModal();
+                    if (this.Modal.Show == false && this.Operate.Add == true)
+                        this.showAddModal();
                     break;
                 case "space":
-                    this.space();
+                    if (this.Modal.Show == false && this.Operate.Del == true)
+                        this.space();
                     break;
             }
         });
@@ -435,9 +437,7 @@ class VueEdit extends vue_property_decorator_1.Vue {
         }
     }
     submit() {
-        if (this.value) {
-            this.Type == "add" ? this.add() : this.edit();
-        }
+        this.Type == "add" ? this.add() : this.edit();
     }
     add() {
         this.$store.dispatch(`A_${this.Code.toUpperCase()}_ADD`, {
@@ -476,10 +476,12 @@ class VueEdit extends vue_property_decorator_1.Vue {
         castle_hotkey_1.default.listen("esc,enter", "Edit", (event, handler) => {
             switch (handler.key) {
                 case "esc":
-                    this.cancel();
+                    if (this.value == true)
+                        this.cancel();
                     break;
                 case "enter":
-                    this.submit();
+                    if (this.value == true)
+                        this.submit();
                     break;
             }
         });

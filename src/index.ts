@@ -31,7 +31,7 @@ export class ModalConfig {
 export class SelectConfig {
     All: boolean = false;
     SelectedIDs: string[] = [];
-    CloseAlert: any = ""
+    CloseAlert: Function | null = null
 }
 
 export class ImportConfig {
@@ -281,47 +281,53 @@ export default class VueList extends Vue {
      * @param v 
      */
     del(v: any) {
-        let index = this.$confirm(
-            //内容
-            "确定要删除吗?",
-            //确定按钮
-            () => {
-                this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL`, {
-                    Data: v,
-                    Success: () => {
-                        this.$msg("删除成功")
-                    },
-                    Error: (e: { message: string }) => {
-                        this.$msg(e.message || "删除失败")
-                    }
-                });
-            },
-            //取消按钮
-            () => { },
-            //标题
-            {
-                icon: 3,
-                title: "信息"
-            }
-        );
-        this.Select.CloseAlert = index
+        if(this.Modal.Show==false && this.Operate.Del==true){
+            let index:Function = this.$confirm(
+                //内容
+                "确定要删除吗?",
+                //确定按钮
+                () => {
+                    this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL`, {
+                        Data: v,
+                        Success: () => {
+                            this.Select.All = false
+                            this.Select.CloseAlert = null
+                            this.$msg("删除成功")
+                        },
+                        Error: (e: { message: string }) => {
+                            this.$msg(e.message || "删除失败")
+                        }
+                    });
+                },
+                //取消按钮
+                () => { },
+                //标题
+                {
+                    icon: 3,
+                    title: "信息"
+                }
+            );
+            this.Select.CloseAlert = index
+        }
     }
     async delW() {
-        //TODD 并且删除提示框显示
-        if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
-            this.Where.W[this.Vuex.PK] = {
-                in: this.Select.SelectedIDs
-            }
-            this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
-                Data: this.Where.W,
-                Success: () => {
-                    this.Select.All = false
-                    this.$msg('删除成功')
-                },
-                Error: (e: { message: string }) => {
-                    this.$msg(e.message || '删除失败')
+        if(this.Modal.Show==false && this.Operate.Del==true){
+            if (this.Select.SelectedIDs.length > 0 && 'function' === typeof this.Select.CloseAlert) {
+                this.Where.W[this.Vuex.PK] = {
+                    in: this.Select.SelectedIDs
                 }
-            })
+                this.$store.dispatch(`A_${this.Vuex.Code.toUpperCase()}_DEL_W`, {
+                    Data: this.Where.W,
+                    Success: () => {
+                        this.Select.All = false
+                        this.Select.CloseAlert=null
+                        this.$msg('删除成功')
+                    },
+                    Error: (e: { message: string }) => {
+                        this.$msg(e.message || '删除失败')
+                    }
+                })
+            }
         }
     }
     /**
@@ -332,7 +338,7 @@ export default class VueList extends Vue {
             this.$msg("请选择需要删除的数据")
             return;
         }
-        let index = this.$confirm(
+        let index:Function = this.$confirm(
             //内容
             "确定要删除吗?",
             //确定按钮
@@ -386,11 +392,9 @@ export default class VueList extends Vue {
      * 上一页
      */
     previous() {
-        if(this.Modal.Show==false){
-            if (this.Where.P > 1) this.Where.P--
-            else this.Where.P = Math.ceil(this.Result.T / this.Where.N)
-            this.Table.Index = -1
-        }
+        if (this.Where.P > 1) this.Where.P--
+        else this.Where.P = Math.ceil(this.Result.T / this.Where.N)
+        this.Table.Index = -1
     }
 
     /**
@@ -398,11 +402,9 @@ export default class VueList extends Vue {
      * 下一页
      */
     next() {
-        if(this.Modal.Show==false){
-            if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
-            else this.Where.P = 1
-            this.Table.Index = -1
-        }
+        if (this.Where.P < Math.ceil(this.Result.T / this.Where.N)) this.Where.P++
+        else this.Where.P = 1
+        this.Table.Index = -1
     }
 
     /**
@@ -410,10 +412,8 @@ export default class VueList extends Vue {
      * tr Index--
      */
     up() {
-        if(this.Modal.Show==false){
-            if (this.Table.Index == -1) this.Table.Index = this.Result.L.length - 1
-            else this.Table.Index--
-        }
+        if (this.Table.Index == -1) this.Table.Index = this.Result.L.length - 1
+        else this.Table.Index--
     }
 
     /**
@@ -421,10 +421,8 @@ export default class VueList extends Vue {
      * tr Index++
      */
     down() {
-        if(this.Modal.Show==false){
-            if (this.Table.Index < this.Result.L.length - 1) this.Table.Index++
-            else this.Table.Index = -1
-        }
+        if (this.Table.Index < this.Result.L.length - 1) this.Table.Index++
+        else this.Table.Index = -1
     }
 
     /**
@@ -432,20 +430,16 @@ export default class VueList extends Vue {
      * 单选
      */
     space() {
-        if(this.Modal.Show==false){
-            if (this.Table.Index < 0) return
-            this.selectOne(this.Result.L[this.Table.Index])
-        }
+        if (this.Table.Index < 0) return
+        this.selectOne(this.Result.L[this.Table.Index])
     }
 
     /**
      * f1
      * 显示添加模态框
      */
-    showAddModal(v?:any) {
-        if(this.Modal.Show==false){
-            this.add(v?v:{})
-        }
+    showAddModal() {
+        this.add({})
     }
 
     /**
@@ -453,10 +447,8 @@ export default class VueList extends Vue {
      * 显示编辑模态框
      */
     showEditModal() {
-        if(this.Modal.Show==false){
-            if (this.Table.Index < 0) return
-            this.edit(this.Result.L[this.Table.Index])
-        }
+        if (this.Table.Index < 0) return
+        this.edit(this.Result.L[this.Table.Index])
     }
 
     /**
@@ -475,10 +467,8 @@ export default class VueList extends Vue {
      * 关闭删除弹框
      */
     closeAlert() {
-        if (this.Select.CloseAlert) {
-            this.Select.CloseAlert()
-            this.Select.All = false
-        }
+        this.Select.CloseAlert()
+        this.Select.All = false
     }
 
     /**
@@ -488,37 +478,37 @@ export default class VueList extends Vue {
         hotkey.listen("ctrl+a,del,enter,esc,left,right,up,down,f1,f2,space", "List", (event, handler) => {
             switch (handler.key) {
                 case "ctrl+a":
-                    this.isSelectAll()
+                    if(this.Modal.Show==false && this.Operate.Del==true) this.isSelectAll()
                     break;
                 case "del":
-                    this.batchDel();
+                    if(this.Modal.Show==false && this.Operate.Del==true) this.batchDel()
                     break;
                 case "enter":
-                    this.delW()
+                    if(this.Modal.Show==false && this.Operate.Del==true) this.delW()
                     break;
                 case "esc":
-                    this.closeAlert()
+                    if('function' == typeof this.Select.CloseAlert) this.closeAlert()
                     break;
                 case "left":
-                    this.previous();
+                    if(this.Modal.Show==false) this.previous();
                     break;
                 case "right":
-                    this.next();
+                    if(this.Modal.Show==false) this.next();
                     break;
                 case "up":
-                    this.up();
+                    if(this.Modal.Show==false) this.up();
                     break;
                 case "down":
-                    this.down();
+                    if(this.Modal.Show==false) this.down();
                     break;
                 case "f2":
-                    this.showEditModal();
+                    if(this.Modal.Show==false && this.Operate.Edit==true) this.showEditModal();
                     break;
                 case "f1":
-                    this.showAddModal();
+                     if(this.Modal.Show==false && this.Operate.Add==true) this.showAddModal();
                     break;
                 case "space":
-                    this.space();
+                    if(this.Modal.Show==false && this.Operate.Del==true) this.space();
                     break;
             }
         })
@@ -581,28 +571,28 @@ export class VueEdit extends Vue {
         required: true,
         default: false
     })
-    value: any
+    value!: boolean
     //模态框类型
     @Prop({
         type: String,
         required: true,
         default: ""
     })
-    Type: any;
+    Type!: string;
     //传入的数据
     @Prop({
         type: [Object, Array],
         required: true,
         default: {}
     })
-    Data: any;
+    Data!: any;
     //表名
     @Prop({
         type: String,
         required: true,
         default: ""
     })
-    Code: any;
+    Code!: string;
 
     @Watch('value')
     watchValue(n: boolean) {
@@ -630,9 +620,7 @@ export class VueEdit extends Vue {
      * 点击确定按钮
      */
     submit() {
-        if (this.value) {
-            this.Type == "add" ? this.add() : this.edit()
-        }
+        this.Type == "add" ? this.add() : this.edit()
     }
     /**
      * 添加
@@ -685,10 +673,10 @@ export class VueEdit extends Vue {
         hotkey.listen("esc,enter", "Edit", (event, handler) => {
             switch (handler.key) {
                 case "esc":
-                    this.cancel()
+                    if(this.value==true) this.cancel()
                     break
                 case "enter":
-                    this.submit()
+                    if(this.value==true) this.submit()
                     break
             }
         });
